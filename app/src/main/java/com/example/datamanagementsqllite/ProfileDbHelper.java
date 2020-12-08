@@ -11,41 +11,46 @@ import android.widget.Toast;
  * Created by MuhammadIbtisam on 20/05/2019.
  */
 
-public class DatabaseManager extends SQLiteOpenHelper {
-    final private static String CREATE_CMD =
-            "CREATE TABLE profile (email TEXT NOT NULL PRIMARY KEY, "
-                    + "name TEXT NOT NULL, "
-                    + "address TEXT NOT NULL, "
-                    + "marital INT NOT NULL)";
+public class ProfileDbHelper extends SQLiteOpenHelper {
+    final private static String SQL_CREATE_ENTRIES =
+            "CREATE TABLE " + ProfileContract.Profile.TABLE_NAME + " ("+
+                    ProfileContract.Profile.COLUMN_NAME_EMAIL + " TEXT NOT NULL PRIMARY KEY, " +
+                    ProfileContract.Profile.COLUMN_NAME_NAME + " TEXT NOT NULL," +
+                    ProfileContract.Profile.COLUMN_NAME_ADDRESS + " TEXT NOT NULL," +
+                    ProfileContract.Profile.COLUMN_NAME_MARITAL + " INT NOT NULL)";
 
+    final private static String SQL_DELETE_ENTRIES =
+            "DROP TABLE IF EXISTS " + ProfileContract.Profile.TABLE_NAME;
 
-    final private static String NAME = "profile_db";
-    final private static Integer VERSION = 1;
+    //if you change the database schema, you must increment the database version.
+    final private static int DATABASE_VERSION = 1;
+    final private static String DATABASE_NAME = "profile.db";
     final private Context mContext;
 
-    public DatabaseManager(Context context) {
-        super(context, NAME, null, VERSION);
+    public ProfileDbHelper(Context context) {
+        super(context, DATABASE_NAME, null, DATABASE_VERSION);
         this.mContext = context;
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(CREATE_CMD);
+        db.execSQL(SQL_CREATE_ENTRIES);
         Toast.makeText(mContext, "profile table Created", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
+        // This database is only a cache for online data, so its upgrade policy is
+        // to simply to discard the data and start over
+        db.execSQL(SQL_DELETE_ENTRIES);
+        onCreate(db);
     }
 
-    public void closeDatabase() {
-        getWritableDatabase().close();
+    @Override
+    public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        onUpgrade(db, oldVersion, newVersion);
     }
 
-    public void deleteDatabase() {
-        mContext.deleteDatabase(NAME);
-    }
 
 
     public int deleteTable(String tableName) {
